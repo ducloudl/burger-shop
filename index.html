@@ -3,955 +3,954 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🍔 3D汉堡店模拟器</title>
+  <title>🍔 Burger Rush - 汉堡快闪</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
+    /* ============================================
+       DESIGN SYSTEM — Burger Rush
+       ============================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     :root {
-      --primary: #ff6b35;
-      --secondary: #ffd700;
-      --success: #4caf50;
-      --danger: #e74c3c;
-      --bg: #1a1a2e;
-      --panel: #16213e;
-      --text: #e8e8e8;
-      --text-secondary: #999;
-      --border: #333;
+      /* Palette — warm food tones */
+      --clr-bg:        #1c1108;
+      --clr-surface:   #2a1a0e;
+      --clr-surface-2: #3a2515;
+      --clr-border:    #4a3520;
+      --clr-text:      #f5e6d3;
+      --clr-text-dim:  #a89080;
+      --clr-accent:    #ff6b2b;
+      --clr-accent-glow: rgba(255, 107, 43, 0.35);
+      --clr-success:   #34d399;
+      --clr-danger:    #f87171;
+      --clr-warning:   #fbbf24;
+      --clr-cheese:    #fbbf24;
+
+      /* Typography */
+      --font: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      /* Spacing */
+      --sp-xs:  4px;
+      --sp-sm:  8px;
+      --sp-md:  16px;
+      --sp-lg:  24px;
+      --sp-xl:  32px;
+
+      /* Radii */
+      --rad-sm: 8px;
+      --rad-md: 14px;
+      --rad-lg: 20px;
+      --rad-full: 999px;
+
+      /* Shadows */
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+      --shadow-glow: 0 0 20px var(--clr-accent-glow);
     }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+
+    html, body {
+      width: 100%; height: 100%;
       overflow: hidden;
-      height: 100vh;
+      font-family: var(--font);
+      background: var(--clr-bg);
+      color: var(--clr-text);
       touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
-    
+
+    /* ---- Canvas ---- */
     #gameCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
       z-index: 1;
     }
-    
-    .ui-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+
+    /* ---- UI Layer ---- */
+    .ui-layer {
+      position: fixed; inset: 0;
       z-index: 10;
       pointer-events: none;
     }
-    
-    .ui-overlay > * {
-      pointer-events: auto;
+    .ui-layer > * { pointer-events: auto; }
+
+    /* ============================================
+       SCREENS (Start / Game / End)
+       ============================================ */
+    .screen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 50;
+      transition: opacity 0.4s, transform 0.4s;
     }
-    
-    /* Header */
-    .header {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      padding: 15px 20px;
-      background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.05);
     }
-    
-    .header h1 {
-      font-size: 24px;
-      color: var(--secondary);
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+
+    /* ---- Start Screen ---- */
+    #startScreen {
+      background: radial-gradient(ellipse at 50% 40%, #3a2010 0%, #1c1108 70%);
     }
-    
-    .stats {
-      display: flex;
-      gap: 15px;
-      font-size: 16px;
+    #startScreen .logo {
+      font-size: clamp(48px, 10vw, 80px);
+      margin-bottom: var(--sp-md);
+      animation: float 3s ease-in-out infinite;
     }
-    
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(255,255,255,0.1);
-      padding: 8px 12px;
-      border-radius: 20px;
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
-    
-    .stat-item .icon {
+    #startScreen h1 {
+      font-size: clamp(28px, 6vw, 48px);
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--clr-accent), var(--clr-cheese));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--sp-sm);
+    }
+    #startScreen .subtitle {
+      font-size: clamp(14px, 3vw, 18px);
+      color: var(--clr-text-dim);
+      margin-bottom: var(--sp-xl);
+      text-align: center;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+    .btn-primary {
+      padding: 16px 48px;
       font-size: 20px;
+      font-weight: 800;
+      font-family: var(--font);
+      color: #fff;
+      background: linear-gradient(135deg, var(--clr-accent), #ff8c42);
+      border: none;
+      border-radius: var(--rad-full);
+      cursor: pointer;
+      box-shadow: var(--shadow-glow), var(--shadow-md);
+      transition: transform 0.15s, box-shadow 0.15s;
     }
-    
-    /* Customer Order Panel */
-    .order-panel {
-      position: absolute;
-      top: 80px;
-      right: 20px;
-      width: 280px;
-      background: rgba(22, 33, 62, 0.95);
-      border-radius: 15px;
-      padding: 20px;
-      border: 2px solid var(--primary);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px var(--clr-accent-glow), var(--shadow-lg); }
+    .btn-primary:active { transform: translateY(0) scale(0.97); }
+
+    /* ---- Game Over Screen ---- */
+    #gameOverScreen {
+      background: rgba(28, 17, 8, 0.95);
+      backdrop-filter: blur(10px);
     }
-    
-    .order-panel h3 {
-      font-size: 18px;
-      margin-bottom: 15px;
-      color: var(--secondary);
+    #gameOverScreen h2 {
+      font-size: clamp(28px, 6vw, 42px);
+      font-weight: 900;
+      color: var(--clr-warning);
+      margin-bottom: var(--sp-lg);
+    }
+    .final-stats {
+      display: flex; gap: var(--sp-lg);
+      margin-bottom: var(--sp-xl);
+    }
+    .final-stat {
       text-align: center;
     }
-    
-    .order-items {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 15px;
+    .final-stat .value {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--clr-accent);
     }
-    
-    .order-item {
+    .final-stat .label {
+      font-size: 13px;
+      color: var(--clr-text-dim);
+      margin-top: 4px;
+    }
+
+    /* ============================================
+       HUD — Top Bar
+       ============================================ */
+    .hud-top {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: var(--sp-md);
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
-      transition: all 0.3s;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(28,17,8,0.9) 0%, transparent 100%);
+      z-index: 20;
     }
-    
-    .order-item.ready {
-      background: rgba(76, 175, 80, 0.3);
-      border: 1px solid var(--success);
-    }
-    
-    .order-item.missing {
-      background: rgba(231, 76, 60, 0.2);
-      border: 1px solid var(--danger);
-    }
-    
-    .order-item .ingredient-icon {
-      font-size: 24px;
-      width: 30px;
-      text-align: center;
-    }
-    
-    .order-item .ingredient-name {
-      flex: 1;
-      font-size: 14px;
-    }
-    
-    .order-item .status-icon {
+    .hud-brand {
       font-size: 18px;
+      font-weight: 800;
+      color: var(--clr-accent);
     }
-    
-    .timer-bar {
+    .hud-stats {
+      display: flex; gap: var(--sp-sm);
+    }
+    .hud-stat {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px;
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--rad-full);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .hud-stat .icon { font-size: 16px; }
+
+    /* ============================================
+       CUSTOMER CARD — Top Left
+       ============================================ */
+    .customer-card {
+      position: absolute;
+      top: 70px; left: var(--sp-md);
+      width: 220px;
+      background: var(--clr-surface);
+      border: 2px solid var(--clr-border);
+      border-radius: var(--rad-lg);
+      padding: var(--sp-md);
+      box-shadow: var(--shadow-md);
+      transition: border-color 0.3s;
+    }
+    .customer-card.ok { border-color: var(--clr-border); }
+    .customer-card.impatient { border-color: var(--clr-warning); animation: pulse-warn 1s infinite; }
+    .customer-card.angry { border-color: var(--clr-danger); animation: shake 0.4s; }
+
+    @keyframes pulse-warn {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+      50% { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.2); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    .customer-face {
+      font-size: 40px;
+      text-align: center;
+      margin-bottom: var(--sp-sm);
+    }
+    .customer-name {
+      text-align: center;
+      font-size: 13px;
+      color: var(--clr-text-dim);
+      margin-bottom: var(--sp-sm);
+    }
+    .timer-track {
       width: 100%;
       height: 6px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 3px;
+      background: var(--clr-surface-2);
+      border-radius: var(--rad-full);
       overflow: hidden;
-      margin-bottom: 10px;
+      margin-bottom: var(--sp-sm);
     }
-    
     .timer-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--danger), var(--secondary), var(--success));
-      transition: width 0.1s linear;
+      border-radius: var(--rad-full);
+      transition: width 0.1s linear, background 0.3s;
+      background: var(--clr-success);
     }
-    
-    .customer-avatar {
-      text-align: center;
-      font-size: 48px;
-      margin-bottom: 10px;
+    .timer-fill.warn { background: var(--clr-warning); }
+    .timer-fill.danger { background: var(--clr-danger); }
+
+    .order-list {
+      display: flex; flex-direction: column; gap: 4px;
     }
-    
-    /* Ingredient Station */
-    .station-panel {
+    .order-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 8px;
+      border-radius: var(--rad-sm);
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .order-row.done {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--clr-success);
+    }
+    .order-row .oi { font-size: 18px; width: 24px; text-align: center; }
+    .order-row .check {
+      margin-left: auto;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .order-row.done .check { opacity: 1; }
+
+    /* ============================================
+       BURGER PREVIEW — Center
+       ============================================ */
+    .burger-preview {
       position: absolute;
-      bottom: 20px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -55%);
+      width: 180px;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      gap: 2px;
+      z-index: 15;
+    }
+    .bp-label {
+      font-size: 11px;
+      color: var(--clr-text-dim);
+      margin-bottom: var(--sp-sm);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+    .bp-layer {
+      width: 140px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      animation: layerDrop 0.25s ease-out;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    @keyframes layerDrop {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .bp-layer.l-bottom  { background: linear-gradient(180deg, #d4a056, #b8863a); border-radius: 6px 6px 10px 10px; }
+    .bp-layer.l-top     { background: linear-gradient(180deg, #d4a056, #b8863a); border-radius: 14px 14px 6px 6px; height: 32px; }
+    .bp-layer.l-lettuce { background: linear-gradient(180deg, #6abf5b, #4a9e3a); }
+    .bp-layer.l-tomato  { background: linear-gradient(180deg, #f07060, #d04030); }
+    .bp-layer.l-cheese  { background: linear-gradient(180deg, #ffe066, #e6c820); }
+    .bp-layer.l-patty   { background: linear-gradient(180deg, #7a5030, #5a3520); }
+    .bp-layer.l-onion   { background: rgba(255,255,255,0.25); border: 2px dashed rgba(255,255,255,0.4); }
+    .bp-layer.l-pickle  { background: linear-gradient(180deg, #8bc34a, #6a9e30); }
+    .bp-empty {
+      font-size: 12px;
+      color: var(--clr-text-dim);
+      text-align: center;
+      padding: 30px 0;
+    }
+
+    /* ============================================
+       INGREDIENT BAR — Bottom
+       ============================================ */
+    .ingredient-bar {
+      position: absolute;
+      bottom: var(--sp-md);
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(22, 33, 62, 0.95);
-      border-radius: 15px;
-      padding: 20px;
-      border: 2px solid var(--primary);
-      min-width: 400px;
-      max-width: 90vw;
+      display: flex;
+      gap: var(--sp-xs);
+      padding: var(--sp-sm) var(--sp-md);
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--rad-lg);
+      box-shadow: var(--shadow-lg);
+      z-index: 20;
     }
-    
-    .station-title {
-      text-align: center;
-      font-size: 18px;
-      color: var(--secondary);
-      margin-bottom: 15px;
-    }
-    
-    .ingredients-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-    
-    .ingredient-btn {
+    .ing-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
-      padding: 15px 10px;
-      background: rgba(255,255,255,0.1);
+      gap: 2px;
+      padding: 10px 12px;
+      background: var(--clr-surface-2);
       border: 2px solid transparent;
-      border-radius: 12px;
+      border-radius: var(--rad-md);
       cursor: pointer;
-      transition: all 0.2s;
-      color: var(--text);
+      transition: all 0.15s;
+      color: var(--clr-text);
+      min-width: 56px;
     }
-    
-    .ingredient-btn:hover {
-      background: rgba(255,255,255,0.2);
-      transform: translateY(-2px);
+    .ing-btn:hover {
+      background: var(--clr-border);
+      transform: translateY(-3px);
+      border-color: var(--clr-accent);
     }
-    
-    .ingredient-btn:active {
-      transform: translateY(0);
+    .ing-btn:active {
+      transform: translateY(0) scale(0.95);
     }
-    
-    .ingredient-btn .icon {
-      font-size: 32px;
+    .ing-btn .emoji { font-size: 24px; line-height: 1; }
+    .ing-btn .name { font-size: 10px; font-weight: 700; opacity: 0.8; }
+
+    .bar-actions {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--sp-xs);
+      padding-left: var(--sp-sm);
+      border-left: 1px solid var(--clr-border);
+      margin-left: var(--sp-xs);
     }
-    
-    .ingredient-btn .name {
+    .action-btn {
+      padding: 8px 16px;
       font-size: 12px;
-      text-align: center;
+      font-weight: 800;
+      font-family: var(--font);
+      border: none;
+      border-radius: var(--rad-sm);
+      cursor: pointer;
+      transition: all 0.15s;
+      color: #fff;
     }
-    
-    /* Burger Assembly */
-    .burger-display {
+    .action-btn:active { transform: scale(0.95); }
+    .btn-clear {
+      background: var(--clr-surface-2);
+      color: var(--clr-text-dim);
+      border: 1px solid var(--clr-border);
+    }
+    .btn-clear:hover { border-color: var(--clr-danger); color: var(--clr-danger); }
+    .btn-serve {
+      background: linear-gradient(135deg, var(--clr-success), #2ecc71);
+      box-shadow: 0 2px 8px rgba(52, 211, 153, 0.3);
+    }
+    .btn-serve:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(52, 211, 153, 0.4); }
+
+    /* ============================================
+       NOTIFICATIONS
+       ============================================ */
+    .notif-container {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 200px;
-      height: 300px;
-      background: rgba(0,0,0,0.5);
-      border-radius: 15px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column-reverse;
-      align-items: center;
-      gap: 5px;
-    }
-    
-    .burger-layer {
-      width: 150px;
-      height: 30px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      animation: dropIn 0.3s ease-out;
-    }
-    
-    @keyframes dropIn {
-      from {
-        opacity: 0;
-        transform: translateY(-50px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    .bottom-bun { background: #d4a574; }
-    .top-bun { background: #d4a574; border-radius: 15px 15px 8px 8px; }
-    .lettuce { background: #4caf50; }
-    .tomato { background: #e74c3c; }
-    .cheese { background: #ffd700; }
-    .patty { background: #5d4037; }
-    .onion { background: #fff; opacity: 0.7; }
-    .pickle { background: #689f38; }
-    
-    /* Action Buttons */
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-      justify-content: center;
-    }
-    
-    .action-btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .action-btn:hover {
-      transform: translateY(-2px);
-    }
-    
-    .action-btn:active {
-      transform: translateY(0);
-    }
-    
-    .btn-serve {
-      background: var(--success);
-      color: white;
-    }
-    
-    .btn-clear {
-      background: var(--danger);
-      color: white;
-    }
-    
-    .btn-next {
-      background: var(--primary);
-      color: white;
-    }
-    
-    /* Start Screen */
-    .start-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      gap: var(--sp-sm);
       z-index: 100;
-      pointer-events: auto;
+      pointer-events: none;
     }
-    
-    .start-screen h1 {
-      font-size: 48px;
-      color: var(--secondary);
-      margin-bottom: 20px;
-      text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
-    }
-    
-    .start-screen p {
+    .notif {
+      padding: 12px 28px;
+      border-radius: var(--rad-full);
       font-size: 18px;
-      color: var(--text-secondary);
-      margin-bottom: 40px;
-      text-align: center;
-      max-width: 500px;
-      line-height: 1.6;
+      font-weight: 800;
+      animation: notifIn 0.3s ease-out, notifOut 0.3s ease-in 1.5s forwards;
+      white-space: nowrap;
     }
-    
-    .start-btn {
-      padding: 20px 60px;
-      font-size: 24px;
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: white;
-      border: none;
-      border-radius: 15px;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+    .notif.success { background: rgba(52, 211, 153, 0.95); color: #000; }
+    .notif.error   { background: rgba(248, 113, 113, 0.95); color: #000; }
+    .notif.info    { background: rgba(255, 107, 43, 0.95); color: #fff; }
+    .notif.money   { background: rgba(251, 191, 36, 0.95); color: #000; }
+
+    @keyframes notifIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.9); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
-    
-    .start-btn:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 32px rgba(255, 107, 53, 0.6);
+    @keyframes notifOut {
+      from { opacity: 1; }
+      to   { opacity: 0; transform: translateY(-10px); }
     }
-    
-    /* Game Over Screen */
-    .game-over-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.9);
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      pointer-events: auto;
-    }
-    
-    .game-over-screen.show {
-      display: flex;
-    }
-    
-    .game-over-screen h2 {
-      font-size: 36px;
-      color: var(--danger);
-      margin-bottom: 20px;
-    }
-    
-    .final-score {
-      font-size: 24px;
-      color: var(--secondary);
-      margin-bottom: 40px;
-    }
-    
-    /* Notification */
-    .notification {
-      position: fixed;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: rgba(22, 33, 62, 0.95);
-      color: var(--text);
-      padding: 15px 30px;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: 600;
-      z-index: 50;
-      transition: transform 0.3s ease-out;
-      border: 2px solid var(--success);
-    }
-    
-    .notification.show {
-      transform: translateX(-50%) translateY(0);
-    }
-    
-    .notification.error {
-      border-color: var(--danger);
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-      .order-panel {
-        width: 200px;
-        right: 10px;
-        padding: 15px;
+
+    /* ============================================
+       MOBILE LAYOUT
+       ============================================ */
+    @media (max-width: 600px) {
+      .customer-card {
+        width: 170px;
+        top: 60px;
+        left: var(--sp-sm);
+        padding: var(--sp-sm);
       }
-      
-      .station-panel {
-        min-width: auto;
-        width: calc(100% - 20px);
-        left: 10px;
-        transform: none;
+      .customer-face { font-size: 32px; }
+      .order-row { font-size: 12px; padding: 4px 6px; }
+      .order-row .oi { font-size: 16px; width: 20px; }
+
+      .burger-preview {
+        width: 140px;
+        transform: translate(-50%, -50%);
+        top: 42%;
       }
-      
-      .ingredients-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
+      .bp-layer { width: 110px; height: 22px; font-size: 16px; }
+      .bp-label { font-size: 10px; }
+
+      .ingredient-bar {
+        padding: 6px 8px;
+        gap: 2px;
+        bottom: var(--sp-sm);
+        width: calc(100% - var(--sp-md));
+        overflow-x: auto;
       }
-      
-      .ingredient-btn {
-        padding: 10px 5px;
+      .ing-btn {
+        min-width: 48px;
+        padding: 8px 6px;
       }
-      
-      .ingredient-btn .icon {
-        font-size: 24px;
+      .ing-btn .emoji { font-size: 20px; }
+      .ing-btn .name { font-size: 9px; }
+
+      .bar-actions {
+        flex-direction: row;
+        padding-left: 6px;
+        margin-left: 4px;
       }
-      
-      .ingredient-btn .name {
-        font-size: 10px;
-      }
-      
-      .burger-display {
-        width: 150px;
-        height: 200px;
-      }
-      
-      .burger-layer {
-        width: 120px;
-        height: 25px;
-      }
+      .action-btn { padding: 6px 12px; font-size: 11px; }
+
+      .hud-top { padding: var(--sp-sm); }
+      .hud-stat { padding: 4px 10px; font-size: 12px; }
+      .hud-brand { font-size: 15px; }
     }
   </style>
 </head>
 <body>
+
   <!-- 3D Canvas -->
   <canvas id="gameCanvas"></canvas>
-  
-  <!-- Start Screen -->
-  <div class="start-screen" id="startScreen">
-    <h1>🍔 汉堡店模拟器</h1>
-    <p>你是汉堡店的新员工！根据客户订单制作汉堡，注意时间和准确性。点击开始，迎接第一位顾客吧！</p>
-    <button class="start-btn" onclick="startGame()">开始营业</button>
+
+  <!-- ==================== START SCREEN ==================== -->
+  <div class="screen" id="startScreen">
+    <div class="logo">🍔</div>
+    <h1>Burger Rush</h1>
+    <p class="subtitle">在繁忙的汉堡店里，根据顾客的订单快速制作汉堡！<br>时间越短，奖励越多。</p>
+    <button class="btn-primary" id="btnStart">开始营业 🍳</button>
   </div>
-  
-  <!-- Game Over Screen -->
-  <div class="game-over-screen" id="gameOverScreen">
-    <h2>🏪 打烊了！</h2>
-    <div class="final-score" id="finalScore">最终得分: 0</div>
-    <button class="start-btn" onclick="restartGame()">再来一天</button>
-  </div>
-  
-  <!-- Notification -->
-  <div class="notification" id="notification"></div>
-  
-  <!-- UI Overlay -->
-  <div class="ui-overlay" id="gameUI" style="display: none;">
-    <!-- Header -->
-    <div class="header">
-      <h1>🍔 汉堡店</h1>
-      <div class="stats">
-        <div class="stat-item">
-          <span class="icon">💰</span>
-          <span id="moneyDisplay">¥0</span>
-        </div>
-        <div class="stat-item">
-          <span class="icon">⭐</span>
-          <span id="scoreDisplay">0</span>
-        </div>
-        <div class="stat-item">
-          <span class="icon">👥</span>
-          <span id="servedDisplay">0/10</span>
-        </div>
+
+  <!-- ==================== GAME OVER SCREEN ==================== -->
+  <div class="screen hidden" id="gameOverScreen">
+    <h2>🌙 今日打烊</h2>
+    <div class="final-stats">
+      <div class="final-stat">
+        <div class="value" id="finalScore">0</div>
+        <div class="label">总分</div>
+      </div>
+      <div class="final-stat">
+        <div class="value" id="finalMoney">¥0</div>
+        <div class="label">收入</div>
+      </div>
+      <div class="final-stat">
+        <div class="value" id="finalServed">0</div>
+        <div class="label">服务顾客</div>
       </div>
     </div>
-    
-    <!-- Order Panel -->
-    <div class="order-panel">
-      <div class="customer-avatar" id="customerAvatar">😊</div>
-      <h3>📋 客户订单</h3>
-      <div class="timer-bar">
+    <button class="btn-primary" id="btnRestart">明天再来 💪</button>
+  </div>
+
+  <!-- ==================== GAME HUD ==================== -->
+  <div class="ui-layer hidden" id="gameUI">
+    <!-- Top Bar -->
+    <div class="hud-top">
+      <div class="hud-brand">🍔 Burger Rush</div>
+      <div class="hud-stats">
+        <div class="hud-stat"><span class="icon">💰</span><span id="hudMoney">¥0</span></div>
+        <div class="hud-stat"><span class="icon">⭐</span><span id="hudScore">0</span></div>
+        <div class="hud-stat"><span class="icon">👥</span><span id="hudServed">0/10</span></div>
+      </div>
+    </div>
+
+    <!-- Customer Card -->
+    <div class="customer-card ok" id="customerCard">
+      <div class="customer-face" id="custFace">😊</div>
+      <div class="customer-name" id="custName">顾客</div>
+      <div class="timer-track">
         <div class="timer-fill" id="timerFill" style="width: 100%"></div>
       </div>
-      <div class="order-items" id="orderItems"></div>
-      <div style="text-align: center; font-size: 12px; color: var(--text-secondary);">
-        限时完成订单！
+      <div class="order-list" id="orderList"></div>
+    </div>
+
+    <!-- Burger Preview -->
+    <div class="burger-preview" id="burgerPreview">
+      <div class="bp-label">你的汉堡</div>
+      <div class="bp-empty">点击下方食材开始制作</div>
+    </div>
+
+    <!-- Ingredient Bar -->
+    <div class="ingredient-bar" id="ingredientBar">
+      <!-- Buttons injected by JS -->
+      <div class="bar-actions">
+        <button class="action-btn btn-clear" id="btnClear">🗑 清空</button>
+        <button class="action-btn btn-serve" id="btnServe">🍽 上菜</button>
       </div>
     </div>
-    
-    <!-- Burger Display -->
-    <div class="burger-display" id="burgerDisplay">
-      <div style="text-align: center; color: var(--text-secondary); font-size: 14px;">
-        汉堡组装区
-      </div>
-    </div>
-    
-    <!-- Station Panel -->
-    <div class="station-panel">
-      <div class="station-title">🍽️ 食材站 - 点击添加</div>
-      <div class="ingredients-grid" id="ingredientsGrid"></div>
-      <div class="action-buttons">
-        <button class="action-btn btn-clear" onclick="clearBurger()">🗑️ 清空</button>
-        <button class="action-btn btn-serve" onclick="serveBurger()">🍽️ 上菜</button>
-      </div>
-    </div>
+
+    <!-- Notifications -->
+    <div class="notif-container" id="notifContainer"></div>
   </div>
-  
+
   <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  
+
   <script>
-    // ===== GAME STATE =====
+    // =============================================
+    // DATA
+    // =============================================
     const INGREDIENTS = [
-      { name: '底层面包', icon: '🟫', class: 'bottom-bun', threeColor: 0xd4a574 },
-      { name: '生菜', icon: '🥬', class: 'lettuce', threeColor: 0x4caf50 },
-      { name: '番茄', icon: '🍅', class: 'tomato', threeColor: 0xe74c3c },
-      { name: '芝士', icon: '🧀', class: 'cheese', threeColor: 0xffd700 },
-      { name: '肉饼', icon: '🥩', class: 'patty', threeColor: 0x5d4037 },
-      { name: '洋葱', icon: '🧅', class: 'onion', threeColor: 0xffffff },
-      { name: '酸黄瓜', icon: '🥒', class: 'pickle', threeColor: 0x689f38 },
-      { name: '顶层面包', icon: '🟫', class: 'top-bun', threeColor: 0xd4a574 }
+      { name: '底层面包', emoji: '🟫', cls: 'l-bottom',  color: 0xb8863a },
+      { name: '生菜',     emoji: '🥬', cls: 'l-lettuce', color: 0x4a9e3a },
+      { name: '番茄',     emoji: '🍅', cls: 'l-tomato',  color: 0xd04030 },
+      { name: '芝士',     emoji: '🧀', cls: 'l-cheese',  color: 0xe6c820 },
+      { name: '肉饼',     emoji: '🥩', cls: 'l-patty',   color: 0x5a3520 },
+      { name: '洋葱',     emoji: '🧅', cls: 'l-onion',   color: 0xffffff },
+      { name: '酸黄瓜',   emoji: '🥒', cls: 'l-pickle',  color: 0x6a9e30 },
+      { name: '顶层面包', emoji: '🟫', cls: 'l-top',     color: 0xb8863a },
     ];
-    
+
     const RECIPES = [
-      ['底层面包', '生菜', '肉饼', '芝士', '番茄', '顶层面包'],
-      ['底层面包', '肉饼', '芝士', '生菜', '顶层面包'],
-      ['底层面包', '生菜', '番茄', '肉饼', '洋葱', '顶层面包'],
-      ['底层面包', '肉饼', '芝士', '酸黄瓜', '生菜', '顶层面包'],
-      ['底层面包', '生菜', '肉饼', '番茄', '芝士', '洋葱', '顶层面包']
+      ['底层面包','生菜','肉饼','芝士','番茄','顶层面包'],
+      ['底层面包','肉饼','芝士','生菜','顶层面包'],
+      ['底层面包','生菜','番茄','肉饼','洋葱','顶层面包'],
+      ['底层面包','肉饼','芝士','酸黄瓜','生菜','顶层面包'],
+      ['底层面包','生菜','肉饼','番茄','芝士','洋葱','顶层面包'],
+      ['底层面包','肉饼','芝士','生菜','番茄','顶层面包'],
+      ['底层面包','生菜','洋葱','肉饼','芝士','顶层面包'],
     ];
-    
-    const CUSTOMER_FACES = ['😊', '😄', '🙂', '😃', '😁', '🤤', '😋'];
-    
-    let gameState = {
-      money: 0,
-      score: 0,
-      served: 0,
-      totalCustomers: 10,
-      currentOrder: null,
-      currentBurger: [],
-      timer: 0,
-      maxTimer: 30,
-      isPlaying: false,
-      scene: null,
-      camera: null,
-      renderer: null,
-      burgerGroup: null,
-      animationId: null
+
+    const CUSTOMERS = [
+      { name: '小明',   face: '😊' },
+      { name: '小红',   face: '😄' },
+      { name: '老王',   face: '🙂' },
+      { name: '小李',   face: '😃' },
+      { name: '阿花',   face: '😁' },
+      { name: '张叔',   face: '🤤' },
+      { name: '陈姐',   face: '😋' },
+      { name: '刘哥',   face: '😎' },
+    ];
+
+    // =============================================
+    // STATE
+    // =============================================
+    const S = {
+      money: 0, score: 0, served: 0, total: 10,
+      order: null, burger: [], timer: 0, maxTimer: 30,
+      playing: false, scene: null, camera: null, renderer: null,
+      burgerGroup: null, animId: null, timerInterval: null,
     };
-    
-    // ===== THREE.JS SETUP =====
-    function initThreeJS() {
+
+    // =============================================
+    // THREE.JS
+    // =============================================
+    function init3D() {
       const canvas = document.getElementById('gameCanvas');
-      
-      // Scene
-      gameState.scene = new THREE.Scene();
-      gameState.scene.background = new THREE.Color(0x1a1a2e);
-      gameState.scene.fog = new THREE.Fog(0x1a1a2e, 10, 50);
-      
-      // Camera
-      gameState.camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
-      gameState.camera.position.set(0, 5, 8);
-      gameState.camera.lookAt(0, 0, 0);
-      
-      // Renderer
-      gameState.renderer = new THREE.WebGLRenderer({ 
-        canvas: canvas,
-        antialias: true 
-      });
-      gameState.renderer.setSize(window.innerWidth, window.innerHeight);
-      gameState.renderer.shadowMap.enabled = true;
-      
-      // Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-      gameState.scene.add(ambientLight);
-      
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(5, 10, 5);
-      directionalLight.castShadow = true;
-      gameState.scene.add(directionalLight);
-      
-      // Counter/Table
-      const counterGeometry = new THREE.BoxGeometry(6, 0.2, 3);
-      const counterMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 });
-      const counter = new THREE.Mesh(counterGeometry, counterMaterial);
-      counter.position.y = -1;
+      S.scene = new THREE.Scene();
+      S.scene.background = new THREE.Color(0x1c1108);
+      S.scene.fog = new THREE.FogExp2(0x1c1108, 0.04);
+
+      S.camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 100);
+      S.camera.position.set(0, 4, 7);
+      S.camera.lookAt(0, 0, 0);
+
+      S.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      S.renderer.setSize(innerWidth, innerHeight);
+      S.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      S.renderer.shadowMap.enabled = true;
+      S.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      // Lights
+      const amb = new THREE.AmbientLight(0xffeedd, 0.5);
+      S.scene.add(amb);
+      const dir = new THREE.DirectionalLight(0xfff0dd, 0.9);
+      dir.position.set(3, 8, 5);
+      dir.castShadow = true;
+      dir.shadow.mapSize.set(1024, 1024);
+      S.scene.add(dir);
+      const pt = new THREE.PointLight(0xff6b2b, 0.4, 15);
+      pt.position.set(-2, 3, 2);
+      S.scene.add(pt);
+
+      // Floor / counter
+      const floorGeo = new THREE.PlaneGeometry(20, 20);
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x2a1a0e, roughness: 0.9 });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -1.5;
+      floor.receiveShadow = true;
+      S.scene.add(floor);
+
+      // Counter
+      const counterGeo = new THREE.BoxGeometry(5, 0.3, 2.5);
+      const counterMat = new THREE.MeshStandardMaterial({ color: 0x5a3520, roughness: 0.7 });
+      const counter = new THREE.Mesh(counterGeo, counterMat);
+      counter.position.set(0, -1.2, 0);
+      counter.castShadow = true;
       counter.receiveShadow = true;
-      gameState.scene.add(counter);
-      
-      // Burger assembly area
-      gameState.burgerGroup = new THREE.Group();
-      gameState.burgerGroup.position.set(0, 0, 0);
-      gameState.scene.add(gameState.burgerGroup);
-      
-      // Handle window resize
-      window.addEventListener('resize', onWindowResize);
-    }
-    
-    function onWindowResize() {
-      gameState.camera.aspect = window.innerWidth / window.innerHeight;
-      gameState.camera.updateProjectionMatrix();
-      gameState.renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-    
-    // ===== 3D BURGER RENDERING =====
-    function update3DBurger() {
-      // Clear existing burger
-      while (gameState.burgerGroup.children.length > 0) {
-        gameState.burgerGroup.remove(gameState.burgerGroup.children[0]);
-      }
-      
-      // Add 3D layers for each ingredient
-      const layerHeight = 0.3;
-      let yOffset = -0.5;
-      
-      gameState.currentBurger.forEach((ingredient, index) => {
-        const ing = INGREDIENTS.find(i => i.name === ingredient);
-        if (ing) {
-          const geometry = new THREE.CylinderGeometry(0.8, 0.8, layerHeight, 32);
-          const material = new THREE.MeshLambertMaterial({ color: ing.threeColor });
-          const mesh = new THREE.Mesh(geometry, material);
-          mesh.position.y = yOffset;
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-          gameState.burgerGroup.add(mesh);
-        }
-        yOffset += layerHeight;
-      });
-      
-      // Rotate burger slowly
-      gameState.burgerGroup.rotation.y += 0.01;
-    }
-    
-    // ===== GAME LOGIC =====
-    function startGame() {
-      document.getElementById('startScreen').style.display = 'none';
-      document.getElementById('gameUI').style.display = 'block';
-      
-      initThreeJS();
-      setupIngredients();
-      generateNewOrder();
-      
-      gameState.isPlaying = true;
-      gameState.timer = gameState.maxTimer;
-      
-      // Start animation loop
-      animate();
-      
-      // Start timer
-      startTimer();
-      
-      showNotification('🎉 第一位顾客来了！');
-    }
-    
-    function setupIngredients() {
-      const grid = document.getElementById('ingredientsGrid');
-      grid.innerHTML = '';
-      
-      INGREDIENTS.forEach(ingredient => {
-        const btn = document.createElement('button');
-        btn.className = 'ingredient-btn';
-        btn.innerHTML = `
-          <span class="icon">${ingredient.icon}</span>
-          <span class="name">${ingredient.name}</span>
-        `;
-        btn.onclick = () => addIngredient(ingredient.name);
-        grid.appendChild(btn);
+      S.scene.add(counter);
+
+      // Burger group
+      S.burgerGroup = new THREE.Group();
+      S.burgerGroup.position.set(0, -0.8, 0);
+      S.scene.add(S.burgerGroup);
+
+      window.addEventListener('resize', () => {
+        S.camera.aspect = innerWidth / innerHeight;
+        S.camera.updateProjectionMatrix();
+        S.renderer.setSize(innerWidth, innerHeight);
       });
     }
-    
-    function generateNewOrder() {
-      const recipeIndex = Math.floor(Math.random() * RECIPES.length);
-      const recipe = RECIPES[recipeIndex];
-      
-      gameState.currentOrder = {
-        ingredients: recipe,
-        customerFace: CUSTOMER_FACES[Math.floor(Math.random() * CUSTOMER_FACES.length)]
-      };
-      
-      gameState.currentBurger = [];
-      gameState.timer = gameState.maxTimer;
-      
-      updateOrderDisplay();
-      updateBurgerDisplay();
-      update3DBurger();
-    }
-    
-    function updateOrderDisplay() {
-      const orderItems = document.getElementById('orderItems');
-      orderItems.innerHTML = '';
-      
-      if (!gameState.currentOrder) return;
-      
-      gameState.currentOrder.ingredients.forEach(ingredient => {
-        const ing = INGREDIENTS.find(i => i.name === ingredient);
-        const item = document.createElement('div');
-        item.className = 'order-item';
-        
-        const isAdded = gameState.currentBurger.includes(ingredient);
-        if (isAdded) {
-          item.classList.add('ready');
-        }
-        
-        item.innerHTML = `
-          <span class="ingredient-icon">${ing ? ing.icon : '❓'}</span>
-          <span class="ingredient-name">${ingredient}</span>
-          <span class="status-icon">${isAdded ? '✅' : '⬜'}</span>
-        `;
-        
-        orderItems.appendChild(item);
-      });
-      
-      document.getElementById('customerAvatar').textContent = 
-        gameState.currentOrder.customerFace;
-    }
-    
-    function updateBurgerDisplay() {
-      const display = document.getElementById('burgerDisplay');
-      display.innerHTML = '<div style="text-align: center; color: var(--text-secondary); font-size: 14px;">汉堡组装区</div>';
-      
-      gameState.currentBurger.forEach(ingredient => {
-        const ing = INGREDIENTS.find(i => i.name === ingredient);
-        if (ing) {
-          const layer = document.createElement('div');
-          layer.className = `burger-layer ${ing.class}`;
-          layer.textContent = ing.icon;
-          display.appendChild(layer);
-        }
+
+    function render3DBurger() {
+      while (S.burgerGroup.children.length) S.burgerGroup.remove(S.burgerGroup.children[0]);
+
+      const layerH = 0.18;
+      let y = -0.3;
+      S.burger.forEach((name, i) => {
+        const ing = INGREDIENTS.find(x => x.name === name);
+        if (!ing) return;
+        const geo = new THREE.CylinderGeometry(0.55, 0.55, layerH, 24);
+        const mat = new THREE.MeshStandardMaterial({
+          color: ing.color,
+          roughness: 0.6,
+          metalness: 0.05,
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = y;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        S.burgerGroup.add(mesh);
+        y += layerH;
       });
     }
-    
-    function addIngredient(name) {
-      if (!gameState.isPlaying) return;
-      
-      gameState.currentBurger.push(name);
-      updateOrderDisplay();
-      updateBurgerDisplay();
-      update3DBurger();
-      
-      // Play sound effect (visual feedback)
-      const btn = event.target.closest('.ingredient-btn');
-      if (btn) {
-        btn.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-          btn.style.transform = '';
-        }, 100);
-      }
-    }
-    
-    function clearBurger() {
-      if (!gameState.isPlaying) return;
-      
-      gameState.currentBurger = [];
-      updateOrderDisplay();
-      updateBurgerDisplay();
-      update3DBurger();
-    }
-    
-    function serveBurger() {
-      if (!gameState.isPlaying) return;
-      
-      const orderIngredients = gameState.currentOrder.ingredients;
-      const burgerIngredients = gameState.currentBurger;
-      
-      // Check if burger matches order
-      const isCorrect = orderIngredients.length === burgerIngredients.length &&
-        orderIngredients.every((ing, idx) => ing === burgerIngredients[idx]);
-      
-      if (isCorrect) {
-        // Success!
-        const timeBonus = Math.floor(gameState.timer * 10);
-        const earnings = 50 + timeBonus;
-        
-        gameState.money += earnings;
-        gameState.score += 100 + Math.floor(gameState.timer * 10);
-        gameState.served++;
-        
-        showNotification(`✅ 完美！获得 ¥${earnings}`);
-        
-        if (gameState.served >= gameState.totalCustomers) {
-          endGame();
+
+    // =============================================
+    // UI HELPERS
+    // =============================================
+    function $(id) { return document.getElementById(id); }
+
+    function showScreen(id) {
+      ['startScreen', 'gameOverScreen', 'gameUI'].forEach(s => {
+        const el = $(s);
+        if (s === id) {
+          el.classList.remove('hidden');
+          el.style.pointerEvents = 'auto';
         } else {
-          setTimeout(() => {
-            generateNewOrder();
-          }, 1500);
+          el.classList.add('hidden');
+          el.style.pointerEvents = 'none';
         }
-      } else {
-        // Wrong order
-        showNotification('❌ 订单不正确！', true);
-        gameState.score = Math.max(0, gameState.score - 50);
-        
-        setTimeout(() => {
-          clearBurger();
-        }, 1000);
+      });
+    }
+
+    function notify(msg, type = 'info') {
+      const c = $('notifContainer');
+      const n = document.createElement('div');
+      n.className = `notif ${type}`;
+      n.textContent = msg;
+      c.appendChild(n);
+      setTimeout(() => n.remove(), 2000);
+    }
+
+    function buildIngredientBar() {
+      const bar = $('ingredientBar');
+      const actions = bar.querySelector('.bar-actions');
+      // Remove old ing buttons
+      bar.querySelectorAll('.ing-btn').forEach(b => b.remove());
+      INGREDIENTS.forEach((ing, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'ing-btn';
+        btn.innerHTML = `<span class="emoji">${ing.emoji}</span><span class="name">${ing.name}</span>`;
+        btn.onclick = () => addIngredient(ing.name);
+        bar.insertBefore(btn, actions);
+      });
+    }
+
+    function updateOrderUI() {
+      if (!S.order) return;
+      const list = $('orderList');
+      list.innerHTML = '';
+      S.order.ingredients.forEach(ingName => {
+        const ing = INGREDIENTS.find(x => x.name === ingName);
+        const done = S.burger.includes(ingName);
+        const row = document.createElement('div');
+        row.className = `order-row${done ? ' done' : ''}`;
+        row.innerHTML = `
+          <span class="oi">${ing ? ing.emoji : '?'}</span>
+          <span>${ingName}</span>
+          <span class="check">✓</span>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function updateBurgerPreview() {
+      const bp = $('burgerPreview');
+      // Remove old layers
+      bp.querySelectorAll('.bp-layer').forEach(l => l.remove());
+      const empty = bp.querySelector('.bp-empty');
+      if (empty) empty.remove();
+
+      if (S.burger.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'bp-empty';
+        emptyDiv.textContent = '点击下方食材开始制作';
+        bp.appendChild(emptyDiv);
+        return;
       }
-      
-      updateStats();
+
+      S.burger.forEach(name => {
+        const ing = INGREDIENTS.find(x => x.name === name);
+        if (!ing) return;
+        const layer = document.createElement('div');
+        layer.className = `bp-layer ${ing.cls}`;
+        layer.textContent = ing.emoji;
+        bp.appendChild(layer);
+      });
     }
-    
-    function startTimer() {
-      const timerInterval = setInterval(() => {
-        if (!gameState.isPlaying) {
-          clearInterval(timerInterval);
-          return;
-        }
-        
-        gameState.timer -= 0.1;
-        
-        // Update timer bar
-        const percentage = (gameState.timer / gameState.maxTimer) * 100;
-        document.getElementById('timerFill').style.width = percentage + '%';
-        
-        if (gameState.timer <= 0) {
-          // Time's up
-          showNotification('⏰ 时间到了！顾客离开了', true);
-          gameState.score -= 100;
-          gameState.served++;
-          
-          if (gameState.served >= gameState.totalCustomers) {
-            endGame();
-          } else {
-            setTimeout(() => {
-              generateNewOrder();
-            }, 1500);
-          }
-          
-          updateStats();
-        }
-      }, 100);
+
+    function updateHUD() {
+      $('hudMoney').textContent = `¥${S.money}`;
+      $('hudScore').textContent = S.score;
+      $('hudServed').textContent = `${S.served}/${S.total}`;
     }
-    
-    function updateStats() {
-      document.getElementById('moneyDisplay').textContent = `¥${gameState.money}`;
-      document.getElementById('scoreDisplay').textContent = gameState.score;
-      document.getElementById('servedDisplay').textContent = 
-        `${gameState.served}/${gameState.totalCustomers}`;
+
+    function updateCustomerCard() {
+      const card = $('customerCard');
+      const pct = (S.timer / S.maxTimer) * 100;
+      const fill = $('timerFill');
+      fill.style.width = pct + '%';
+
+      card.classList.remove('ok', 'impatient', 'angry');
+      fill.classList.remove('warn', 'danger');
+
+      if (pct > 60) {
+        card.classList.add('ok');
+      } else if (pct > 30) {
+        card.classList.add('impatient');
+        fill.classList.add('warn');
+      } else {
+        card.classList.add('angry');
+        fill.classList.add('danger');
+      }
     }
-    
-    function showNotification(message, isError = false) {
-      const notif = document.getElementById('notification');
-      notif.textContent = message;
-      notif.className = 'notification' + (isError ? ' error' : '');
-      
-      setTimeout(() => {
-        notif.classList.add('show');
-      }, 10);
-      
-      setTimeout(() => {
-        notif.classList.remove('show');
-      }, 2000);
+
+    // =============================================
+    // GAME LOGIC
+    // =============================================
+    function startGame() {
+      S.money = 0; S.score = 0; S.served = 0;
+      showScreen('gameUI');
+      init3D();
+      buildIngredientBar();
+      nextOrder();
+      S.playing = true;
+      animate();
     }
-    
+
+    function nextOrder() {
+      const recipe = RECIPES[Math.floor(Math.random() * RECIPES.length)];
+      const cust = CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
+      S.order = { ingredients: recipe, customer: cust };
+      S.burger = [];
+      S.timer = S.maxTimer;
+
+      $('custFace').textContent = cust.face;
+      $('custName').textContent = cust.name;
+
+      updateOrderUI();
+      updateBurgerPreview();
+      updateHUD();
+      updateCustomerCard();
+      render3DBurger();
+
+      if (S.timerInterval) clearInterval(S.timerInterval);
+      S.timerInterval = setInterval(tick, 100);
+    }
+
+    function tick() {
+      if (!S.playing) return;
+      S.timer -= 0.1;
+      updateCustomerCard();
+
+      if (S.timer <= 0) {
+        clearInterval(S.timerInterval);
+        notify('⏰ 顾客等不及走了！', 'error');
+        S.score = Math.max(0, S.score - 50);
+        S.served++;
+        updateHUD();
+        if (S.served >= S.total) { endGame(); return; }
+        setTimeout(nextOrder, 1200);
+      }
+    }
+
+    function addIngredient(name) {
+      if (!S.playing) return;
+      S.burger.push(name);
+      updateOrderUI();
+      updateBurgerPreview();
+      render3DBurger();
+    }
+
+    function clearBurger() {
+      if (!S.playing) return;
+      S.burger = [];
+      updateOrderUI();
+      updateBurgerPreview();
+      render3DBurger();
+    }
+
+    function serveBurger() {
+      if (!S.playing || !S.order) return;
+      const need = S.order.ingredients;
+      const have = S.burger;
+      const correct = need.length === have.length && need.every((v, i) => v === have[i]);
+
+      if (correct) {
+        const bonus = Math.floor(S.timer * 5);
+        const earn = 30 + bonus;
+        S.money += earn;
+        S.score += 80 + bonus;
+        S.served++;
+        notify(`✅ ${S.order.customer.name} 很满意！+¥${earn}`, 'success');
+        updateHUD();
+        if (S.served >= S.total) { endGame(); return; }
+        setTimeout(nextOrder, 1400);
+      } else {
+        notify('❌ 订单不对！', 'error');
+        S.score = Math.max(0, S.score - 30);
+        updateHUD();
+        setTimeout(clearBurger, 800);
+      }
+    }
+
     function endGame() {
-      gameState.isPlaying = false;
-      document.getElementById('gameUI').style.display = 'none';
-      document.getElementById('gameOverScreen').classList.add('show');
-      document.getElementById('finalScore').textContent = 
-        `最终得分: ${gameState.score} | 收入: ¥${gameState.money}`;
+      S.playing = false;
+      clearInterval(S.timerInterval);
+      $('finalScore').textContent = S.score;
+      $('finalMoney').textContent = `¥${S.money}`;
+      $('finalServed').textContent = S.served;
+      showScreen('gameOverScreen');
     }
-    
+
     function restartGame() {
-      // Reset game state
-      gameState.money = 0;
-      gameState.score = 0;
-      gameState.served = 0;
-      gameState.currentOrder = null;
-      gameState.currentBurger = [];
-      
-      document.getElementById('gameOverScreen').classList.remove('show');
+      // Clean up 3D
+      if (S.animId) cancelAnimationFrame(S.animId);
+      if (S.renderer) S.renderer.dispose();
       startGame();
     }
-    
-    // ===== ANIMATION LOOP =====
+
+    // =============================================
+    // ANIMATION LOOP
+    // =============================================
     function animate() {
-      if (!gameState.isPlaying) return;
-      
-      gameState.animationId = requestAnimationFrame(animate);
-      
-      // Render scene
-      gameState.renderer.render(gameState.scene, gameState.camera);
+      if (!S.playing) return;
+      S.animId = requestAnimationFrame(animate);
+      if (S.burgerGroup) S.burgerGroup.rotation.y += 0.008;
+      S.renderer.render(S.scene, S.camera);
     }
-    
-    // ===== KEYBOARD CONTROLS =====
-    document.addEventListener('keydown', (e) => {
-      if (!gameState.isPlaying) return;
-      
-      const keyMap = {
-        '1': 0, '2': 1, '3': 2, '4': 3,
-        '5': 4, '6': 5, '7': 6, '8': 7
-      };
-      
-      if (keyMap[e.key] !== undefined) {
-        const ingredient = INGREDIENTS[keyMap[e.key]];
-        addIngredient(ingredient.name);
+
+    // =============================================
+    // EVENTS
+    // =============================================
+    $('btnStart').onclick = startGame;
+    $('btnRestart').onclick = restartGame;
+    $('btnClear').onclick = clearBurger;
+    $('btnServe').onclick = serveBurger;
+
+    document.addEventListener('keydown', e => {
+      if (!S.playing) return;
+      const map = { '1':'add0','2':'add1','3':'add2','4':'add3','5':'add4','6':'add5','7':'add6','8':'add7' };
+      if (map[e.key]) {
+        const idx = parseInt(e.key) - 1;
+        if (INGREDIENTS[idx]) addIngredient(INGREDIENTS[idx].name);
       }
-      
-      if (e.key === 'c' || e.key === 'C') {
-        clearBurger();
-      }
-      
-      if (e.key === 's' || e.key === 'S') {
-        serveBurger();
-      }
+      if (e.key === 'c' || e.key === 'C') clearBurger();
+      if (e.key === 's' || e.key === 'S') serveBurger();
     });
-    
-    // Prevent zoom on mobile
-    document.addEventListener('touchmove', (e) => {
-      if (e.target.closest('.ui-overlay')) return;
-      e.preventDefault();
-    }, { passive: false });
+
+    // Prevent double-tap zoom
+    document.addEventListener('touchend', e => {
+      const now = Date.now();
+      if (now - (document.lastTouchEnd || 0) <= 300) e.preventDefault();
+      document.lastTouchEnd = now;
+    }, false);
   </script>
 </body>
 </html>
