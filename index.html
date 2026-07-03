@@ -5,40 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>🍔 Burger Rush - 汉堡快闪</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <title>🍔 Burger Rush</title>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --clr-bg:        #1c1108;
-      --clr-surface:   #2a1a0e;
-      --clr-surface-2: #3a2515;
-      --clr-border:    #4a3520;
-      --clr-text:      #f5e6d3;
-      --clr-text-dim:  #a89080;
-      --clr-accent:    #ff6b2b;
-      --clr-accent-glow: rgba(255, 107, 43, 0.35);
-      --clr-success:   #34d399;
-      --clr-danger:    #f87171;
-      --clr-warning:   #fbbf24;
-      --clr-cheese:    #fbbf24;
-      --font: 'Nunito', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-      --sp-xs:  4px;
-      --sp-sm:  8px;
-      --sp-md:  14px;
-      --sp-lg:  20px;
-      --sp-xl:  28px;
-      --rad-sm: 8px;
-      --rad-md: 12px;
-      --rad-lg: 16px;
-      --rad-full: 999px;
-      --shadow-sm: 0 2px 6px rgba(0,0,0,0.3);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-      --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
-      --shadow-glow: 0 0 16px var(--clr-accent-glow);
+      --bg:         #0f0b06;
+      --surface:    rgba(42, 26, 14, 0.75);
+      --surface-2:  rgba(58, 37, 21, 0.6);
+      --border:     rgba(255, 107, 43, 0.2);
+      --text:       #fff3e6;
+      --text-dim:   rgba(255, 243, 230, 0.55);
+      --accent:     #ff6b2b;
+      --accent2:    #ffb347;
+      --success:    #34d399;
+      --danger:     #f87171;
+      --warning:    #fbbf24;
+      --glow:       0 0 20px rgba(255, 107, 43, 0.25);
+      --glass:      0 8px 32px rgba(0, 0, 0, 0.4);
+      --radius:     16px;
+      --radius-sm:  10px;
+      --radius-full: 999px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -46,23 +33,23 @@
     html, body {
       width: 100%; height: 100%;
       overflow: hidden;
-      font-family: var(--font);
-      background: var(--clr-bg);
-      color: var(--clr-text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       touch-action: none;
       -webkit-user-select: none;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ---- Canvas ---- */
+    /* ======== Canvas ======== */
     #gameCanvas {
       position: fixed; inset: 0;
       width: 100%; height: 100%;
       z-index: 1;
     }
 
-    /* ---- UI Layer ---- */
+    /* ======== UI Layer ======== */
     .ui-layer {
       position: fixed; inset: 0;
       z-index: 10;
@@ -70,287 +57,327 @@
     }
     .ui-layer > * { pointer-events: auto; }
 
-    /* ============================================
-       SCREENS
-       ============================================ */
+    /* ======== Screens ======== */
     .screen {
       position: fixed; inset: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       z-index: 50;
-      transition: opacity 0.4s, transform 0.4s;
+      transition: opacity 0.5s cubic-bezier(.4,0,.2,1), transform 0.5s cubic-bezier(.4,0,.2,1);
     }
     .screen.hidden {
       opacity: 0;
       pointer-events: none;
-      transform: scale(1.05);
+      transform: scale(1.08);
     }
 
+    /* ---- Start Screen ---- */
     #startScreen {
-      background: radial-gradient(ellipse at 50% 40%, #3a2010 0%, #1c1108 70%);
+      background: radial-gradient(circle at 50% 35%, #2a1808 0%, #0f0b06 70%);
+      overflow: hidden;
     }
-    #startScreen .logo {
-      font-size: clamp(44px, 12vw, 72px);
-      margin-bottom: var(--sp-sm);
+    #startScreen::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(255,107,43,0.15) 0%, transparent 70%);
+      top: 30%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse-glow 4s ease-in-out infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+      50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+    }
+    .start-logo {
+      font-size: clamp(56px, 16vw, 88px);
+      margin-bottom: 4px;
       animation: float 3s ease-in-out infinite;
+      position: relative; z-index: 1;
+      filter: drop-shadow(0 4px 20px rgba(255,107,43,0.3));
     }
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
     }
-    #startScreen h1 {
-      font-size: clamp(26px, 7vw, 44px);
+    .start-title {
+      font-size: clamp(32px, 9vw, 52px);
       font-weight: 900;
-      background: linear-gradient(135deg, var(--clr-accent), var(--clr-cheese));
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: var(--sp-xs);
+      margin-bottom: 6px;
+      position: relative; z-index: 1;
     }
-    #startScreen .subtitle {
-      font-size: clamp(13px, 3.5vw, 17px);
-      color: var(--clr-text-dim);
-      margin-bottom: var(--sp-lg);
+    .start-sub {
+      font-size: clamp(13px, 3.5vw, 16px);
+      color: var(--text-dim);
+      margin-bottom: 28px;
       text-align: center;
-      max-width: 360px;
-      line-height: 1.5;
-      padding: 0 var(--sp-md);
+      max-width: 320px;
+      line-height: 1.6;
+      padding: 0 20px;
+      position: relative; z-index: 1;
     }
-    .btn-primary {
-      padding: 14px 44px;
+    .btn-start {
+      padding: 16px 52px;
       font-size: 18px;
       font-weight: 800;
-      font-family: var(--font);
+      font-family: inherit;
       color: #fff;
-      background: linear-gradient(135deg, var(--clr-accent), #ff8c42);
+      background: linear-gradient(135deg, var(--accent), #ff8c42);
       border: none;
-      border-radius: var(--rad-full);
+      border-radius: var(--radius-full);
       cursor: pointer;
-      box-shadow: var(--shadow-glow), var(--shadow-md);
+      box-shadow: var(--glow), 0 4px 16px rgba(0,0,0,0.4);
       transition: transform 0.15s, box-shadow 0.15s;
-      min-width: 180px;
-      text-align: center;
+      position: relative; z-index: 1;
     }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 24px var(--clr-accent-glow), var(--shadow-lg); }
-    .btn-primary:active { transform: translateY(0) scale(0.97); }
+    .btn-start:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 0 30px rgba(255,107,43,0.4), 0 8px 24px rgba(0,0,0,0.5); }
+    .btn-start:active { transform: translateY(0) scale(0.97); }
 
-    #gameOverScreen { background: rgba(28, 17, 8, 0.95); backdrop-filter: blur(10px); }
+    /* ---- Game Over ---- */
+    #gameOverScreen {
+      background: rgba(15, 11, 6, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
     #gameOverScreen h2 {
-      font-size: clamp(24px, 6vw, 38px);
+      font-size: clamp(28px, 7vw, 42px);
       font-weight: 900;
-      color: var(--clr-warning);
-      margin-bottom: var(--sp-md);
+      color: var(--warning);
+      margin-bottom: 20px;
     }
     .final-stats {
-      display: flex; gap: var(--sp-md);
-      margin-bottom: var(--sp-lg);
+      display: flex; gap: 16px;
+      margin-bottom: 32px;
     }
-    .final-stat { text-align: center; }
-    .final-stat .value { font-size: 32px; font-weight: 900; color: var(--clr-accent); }
-    .final-stat .label { font-size: 12px; color: var(--clr-text-dim); margin-top: 2px; }
+    .final-stat {
+      text-align: center;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(8px);
+      min-width: 90px;
+    }
+    .final-stat .value {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .final-stat .label {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-    /* ============================================
-       HUD — Top Bar
-       ============================================ */
+    /* ======== HUD ======== */
     .hud-top {
       position: absolute;
       top: var(--safe-top);
       left: 0; right: 0;
-      padding: 8px var(--sp-md);
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: linear-gradient(180deg, rgba(28,17,8,0.92) 0%, transparent 100%);
+      background: linear-gradient(180deg, rgba(15,11,6,0.85) 0%, transparent 100%);
       z-index: 20;
     }
     .hud-brand {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 800;
-      color: var(--clr-accent);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .hud-stats {
-      display: flex; gap: 6px;
+      display: flex; gap: 8px;
     }
     .hud-stat {
       display: flex; align-items: center; gap: 4px;
-      padding: 4px 10px;
-      background: var(--clr-surface);
-      border: 1px solid var(--clr-border);
-      border-radius: var(--rad-full);
-      font-size: 12px;
+      padding: 5px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      backdrop-filter: blur(10px);
+      font-size: 13px;
       font-weight: 700;
     }
-    .hud-stat .icon { font-size: 14px; }
+    .hud-stat .icon { font-size: 15px; }
 
-    /* ============================================
-       CUSTOMER CARD
-       ============================================ */
+    /* ======== Customer Card ======== */
     .customer-card {
       position: absolute;
-      top: calc(var(--safe-top) + 44px);
-      left: var(--sp-md);
-      width: 200px;
-      background: var(--clr-surface);
-      border: 2px solid var(--clr-border);
-      border-radius: var(--rad-lg);
-      padding: 10px;
-      box-shadow: var(--shadow-md);
+      top: calc(var(--safe-top) + 52px);
+      left: 12px;
+      width: 190px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: var(--glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       transition: border-color 0.3s, transform 0.5s, opacity 0.5s;
     }
-    .customer-card.ok { border-color: var(--clr-border); }
-    .customer-card.impatient { border-color: var(--clr-warning); animation: pulse-warn 1s infinite; }
-    .customer-card.angry { border-color: var(--clr-danger); animation: shake 0.4s; }
+    .customer-card.ok { border-color: var(--border); }
+    .customer-card.impatient { border-color: var(--warning); box-shadow: 0 0 12px rgba(251,191,36,0.15); }
+    .customer-card.angry { border-color: var(--danger); animation: shake 0.4s; }
 
-    @keyframes pulse-warn {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
-      50% { box-shadow: 0 0 0 5px rgba(251, 191, 36, 0.2); }
-    }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-3px); }
-      75% { transform: translateX(3px); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
     }
 
-    .customer-face {
-      font-size: 36px;
-      text-align: center;
-      margin-bottom: 2px;
+    .cust-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
     }
-    .customer-name {
-      text-align: center;
-      font-size: 12px;
-      color: var(--clr-text-dim);
-      margin-bottom: 6px;
+    .cust-face {
+      font-size: 32px;
+      line-height: 1;
+    }
+    .cust-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dim);
     }
     .timer-track {
       width: 100%;
-      height: 5px;
-      background: var(--clr-surface-2);
-      border-radius: var(--rad-full);
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: var(--radius-full);
       overflow: hidden;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .timer-fill {
       height: 100%;
-      border-radius: var(--rad-full);
+      border-radius: var(--radius-full);
       transition: width 0.1s linear, background 0.3s;
-      background: var(--clr-success);
+      background: var(--success);
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
     }
-    .timer-fill.warn { background: var(--clr-warning); }
-    .timer-fill.danger { background: var(--clr-danger); }
+    .timer-fill.warn { background: var(--warning); box-shadow: 0 0 8px rgba(251,191,36,0.4); }
+    .timer-fill.danger { background: var(--danger); box-shadow: 0 0 8px rgba(248,113,113,0.4); }
 
-    .order-list {
-      display: flex; flex-direction: column; gap: 3px;
-    }
+    .order-list { display: flex; flex-direction: column; gap: 3px; }
     .order-row {
       display: flex; align-items: center; gap: 6px;
-      padding: 4px 6px;
-      border-radius: var(--rad-sm);
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
       font-size: 12px;
       font-weight: 600;
       transition: all 0.2s;
+      background: rgba(255,255,255,0.03);
     }
     .order-row.done {
-      background: rgba(52, 211, 153, 0.15);
-      color: var(--clr-success);
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--success);
     }
-    .order-row .oi { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
-    .order-row .check { margin-left: auto; font-size: 13px; }
+    .order-row .oi { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+    .order-row .check { margin-left: auto; font-size: 14px; }
 
-    /* ============================================
-       BURGER PREVIEW — Center
-       ============================================ */
+    /* ======== Burger Preview ======== */
     .burger-preview {
       position: absolute;
-      top: 40%;
+      top: 38%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 160px;
+      width: 150px;
       display: flex;
       flex-direction: column-reverse;
       align-items: center;
-      gap: 2px;
+      gap: 1px;
       z-index: 15;
     }
     .bp-label {
       font-size: 10px;
-      color: var(--clr-text-dim);
-      margin-bottom: 4px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 700;
+      letter-spacing: 1.5px;
+      font-weight: 800;
     }
     .bp-layer {
-      width: 130px;
-      height: 24px;
+      width: 120px;
+      height: 22px;
       border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 16px;
       animation: layerDrop 0.25s ease-out;
-      box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
     @keyframes layerDrop {
-      from { opacity: 0; transform: translateY(-16px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(-14px) scale(0.9); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
     .bp-layer.l-bottom  { background: linear-gradient(180deg, #d4a056, #b8863a); border-radius: 5px 5px 9px 9px; }
-    .bp-layer.l-top     { background: linear-gradient(180deg, #d4a056, #b8863a); border-radius: 12px 12px 5px 5px; height: 28px; }
+    .bp-layer.l-top     { background: linear-gradient(180deg, #d4a056, #b8863a); border-radius: 12px 12px 5px 5px; height: 26px; }
     .bp-layer.l-lettuce { background: linear-gradient(180deg, #6abf5b, #4a9e3a); }
     .bp-layer.l-tomato  { background: linear-gradient(180deg, #f07060, #d04030); }
     .bp-layer.l-cheese  { background: linear-gradient(180deg, #ffe066, #e6c820); }
     .bp-layer.l-patty   { background: linear-gradient(180deg, #7a5030, #5a3520); }
-    .bp-layer.l-onion   { background: rgba(255,255,255,0.25); border: 2px dashed rgba(255,255,255,0.4); }
+    .bp-layer.l-onion   { background: rgba(255,255,255,0.2); border: 2px dashed rgba(255,255,255,0.35); }
     .bp-layer.l-pickle  { background: linear-gradient(180deg, #8bc34a, #6a9e30); }
     .bp-empty {
       font-size: 11px;
-      color: var(--clr-text-dim);
+      color: var(--text-dim);
       text-align: center;
-      padding: 24px 0;
+      padding: 20px 0;
     }
 
-    /* ============================================
-       INGREDIENT BAR — Bottom
-       ============================================ */
+    /* ======== Ingredient Bar ======== */
     .ingredient-bar {
       position: absolute;
       bottom: calc(var(--safe-bottom) + 10px);
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 4px;
-      padding: 6px 8px;
-      background: var(--clr-surface);
-      border: 1px solid var(--clr-border);
-      border-radius: var(--rad-lg);
-      box-shadow: var(--shadow-lg);
+      gap: 5px;
+      padding: 7px 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       z-index: 20;
     }
     .ing-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1px;
-      padding: 8px 10px;
-      background: var(--clr-surface-2);
-      border: 2px solid transparent;
-      border-radius: var(--rad-md);
+      gap: 2px;
+      padding: 8px 9px;
+      background: var(--surface-2);
+      border: 1.5px solid transparent;
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: all 0.15s;
-      color: var(--clr-text);
-      min-width: 48px;
-    }
-    .ing-btn:hover {
-      background: var(--clr-border);
-      transform: translateY(-2px);
-      border-color: var(--clr-accent);
+      transition: all 0.12s;
+      color: var(--text);
+      min-width: 44px;
     }
     .ing-btn:active {
-      transform: translateY(0) scale(0.93);
+      background: rgba(255, 107, 43, 0.2);
+      border-color: var(--accent);
+      transform: scale(0.92);
     }
     .ing-btn .emoji { font-size: 22px; line-height: 1; }
-    .ing-btn .name { font-size: 9px; font-weight: 700; opacity: 0.8; }
+    .ing-btn .name { font-size: 9px; font-weight: 700; opacity: 0.7; }
 
     .bar-actions {
       display: flex;
@@ -358,46 +385,42 @@
       justify-content: center;
       gap: 3px;
       padding-left: 8px;
-      border-left: 1px solid var(--clr-border);
+      border-left: 1px solid var(--border);
       margin-left: 2px;
     }
     .action-btn {
       padding: 6px 14px;
       font-size: 11px;
       font-weight: 800;
-      font-family: var(--font);
+      font-family: inherit;
       border: none;
-      border-radius: var(--rad-sm);
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.12s;
       color: #fff;
-      min-height: 36px;
+      min-height: 34px;
     }
-    .action-btn:active { transform: scale(0.95); }
+    .action-btn:active { transform: scale(0.93); }
     .btn-undo {
-      background: var(--clr-surface-2);
-      color: var(--clr-text-dim);
-      border: 1px solid var(--clr-border);
+      background: rgba(255,255,255,0.08);
+      color: var(--text-dim);
     }
-    .btn-undo:hover { border-color: var(--clr-warning); color: var(--clr-warning); }
+    .btn-undo:active { background: rgba(251,191,36,0.2); color: var(--warning); }
     .btn-clear {
-      background: var(--clr-surface-2);
-      color: var(--clr-text-dim);
-      border: 1px solid var(--clr-border);
+      background: rgba(255,255,255,0.08);
+      color: var(--text-dim);
     }
-    .btn-clear:hover { border-color: var(--clr-danger); color: var(--clr-danger); }
+    .btn-clear:active { background: rgba(248,113,113,0.2); color: var(--danger); }
     .btn-serve {
-      background: linear-gradient(135deg, var(--clr-success), #2ecc71);
-      box-shadow: 0 2px 6px rgba(52, 211, 153, 0.3);
+      background: linear-gradient(135deg, var(--success), #2ecc71);
+      box-shadow: 0 2px 8px rgba(52, 211, 153, 0.25);
     }
-    .btn-serve:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(52, 211, 153, 0.4); }
+    .btn-serve:active { transform: scale(0.95); box-shadow: 0 0 12px rgba(52,211,153,0.4); }
 
-    /* ============================================
-       NOTIFICATIONS
-       ============================================ */
+    /* ======== Notifications ======== */
     .notif-container {
       position: absolute;
-      top: 35%;
+      top: 32%;
       left: 50%;
       transform: translate(-50%, -50%);
       display: flex;
@@ -408,154 +431,92 @@
       pointer-events: none;
     }
     .notif {
-      padding: 10px 24px;
-      border-radius: var(--rad-full);
-      font-size: 15px;
+      padding: 10px 22px;
+      border-radius: var(--radius-full);
+      font-size: 14px;
       font-weight: 800;
-      animation: notifIn 0.3s ease-out, notifOut 0.3s ease-in 1.5s forwards;
+      animation: notifIn 0.25s ease-out, notifOut 0.25s ease-in 1.5s forwards;
       white-space: nowrap;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: var(--glass);
     }
-    .notif.success { background: rgba(52, 211, 153, 0.95); color: #000; }
-    .notif.error   { background: rgba(248, 113, 113, 0.95); color: #000; }
-    .notif.info    { background: rgba(255, 107, 43, 0.95); color: #fff; }
-    .notif.money   { background: rgba(251, 191, 36, 0.95); color: #000; }
+    .notif.success { background: rgba(52, 211, 153, 0.9); color: #000; }
+    .notif.error   { background: rgba(248, 113, 113, 0.9); color: #000; }
+    .notif.info    { background: rgba(255, 107, 43, 0.9); color: #fff; }
 
     @keyframes notifIn {
-      from { opacity: 0; transform: translateY(16px) scale(0.9); }
+      from { opacity: 0; transform: translateY(12px) scale(0.92); }
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
     @keyframes notifOut {
       from { opacity: 1; }
-      to   { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 0; transform: translateY(-6px); }
     }
 
-    /* ============================================
-       TABLET — 601px to 900px
-       ============================================ */
-    @media (min-width: 601px) and (max-width: 900px) {
-      .customer-card {
-        width: 220px;
-        top: 60px;
-      }
-      .burger-preview {
-        width: 180px;
-        top: 42%;
-      }
-      .bp-layer { width: 140px; height: 28px; font-size: 20px; }
-      .ingredient-bar {
-        bottom: 20px;
-        padding: 8px 12px;
-      }
-      .ing-btn { min-width: 56px; padding: 10px 12px; }
-      .ing-btn .emoji { font-size: 24px; }
-      .bar-actions { flex-direction: row; gap: 6px; }
-    }
-
-    /* ============================================
-       DESKTOP — > 900px
-       ============================================ */
-    @media (min-width: 901px) {
-      .customer-card {
-        width: 240px;
-        top: 60px;
-        left: 30px;
-        padding: 14px;
-      }
-      .customer-face { font-size: 44px; }
-      .order-row { font-size: 13px; padding: 6px 10px; }
-      .order-row .oi { font-size: 20px; width: 26px; }
-
-      .burger-preview {
-        width: 200px;
-        top: 40%;
-      }
-      .bp-layer { width: 160px; height: 30px; font-size: 22px; }
-      .bp-label { font-size: 12px; }
-
-      .ingredient-bar {
-        bottom: 24px;
-        padding: 10px 14px;
-        gap: 6px;
-      }
-      .ing-btn {
-        min-width: 64px;
-        padding: 12px 14px;
-      }
-      .ing-btn .emoji { font-size: 28px; }
-      .ing-btn .name { font-size: 11px; }
-
-      .bar-actions {
-        flex-direction: row;
-        padding-left: 12px;
-        margin-left: 6px;
-        gap: 6px;
-      }
-      .action-btn {
-        padding: 10px 20px;
-        font-size: 13px;
-        min-height: 40px;
-      }
-
-      .hud-top { padding: 10px 24px; }
-      .hud-stat { padding: 6px 14px; font-size: 14px; }
-      .hud-brand { font-size: 18px; }
-      .hud-stats { gap: 10px; }
-
-      .notif { font-size: 18px; padding: 12px 28px; }
-      .final-stat .value { font-size: 40px; }
-    }
-
-    /* ============================================
-       SMALL PHONE — < 380px
-       ============================================ */
+    /* ======== Responsive ======== */
     @media (max-width: 380px) {
-      .customer-card {
-        width: 160px;
-        padding: 8px;
-        top: calc(var(--safe-top) + 40px);
-      }
-      .customer-face { font-size: 28px; }
-      .order-row { font-size: 11px; padding: 3px 5px; gap: 4px; }
-      .order-row .oi { font-size: 14px; width: 18px; }
+      .customer-card { width: 155px; padding: 8px; top: calc(var(--safe-top) + 40px); }
+      .cust-face { font-size: 26px; }
+      .order-row { font-size: 11px; padding: 3px 5px; }
       .hud-stat { padding: 3px 8px; font-size: 11px; }
-      .hud-brand { font-size: 13px; }
-
-      .burger-preview {
-        width: 120px;
-        top: 35%;
-      }
-      .bp-layer { width: 100px; height: 20px; font-size: 15px; }
-
-      .ingredient-bar {
-        padding: 4px 6px;
-        gap: 2px;
-        bottom: calc(var(--safe-bottom) + 6px);
-      }
-      .ing-btn {
-        min-width: 40px;
-        padding: 6px 4px;
-      }
+      .burger-preview { width: 115px; top: 33%; }
+      .bp-layer { width: 95px; height: 18px; font-size: 14px; }
+      .ingredient-bar { padding: 4px 5px; gap: 3px; }
+      .ing-btn { min-width: 38px; padding: 6px 3px; }
       .ing-btn .emoji { font-size: 18px; }
-      .ing-btn .name { font-size: 8px; }
-      .bar-actions { padding-left: 4px; margin-left: 2px; }
-      .action-btn { padding: 5px 10px; font-size: 10px; min-height: 32px; }
+      .ing-btn .name { font-size: 7px; }
+      .action-btn { padding: 5px 10px; font-size: 10px; min-height: 30px; }
+    }
+
+    @media (min-width: 381px) and (max-width: 600px) {
+      .customer-card { width: 175px; }
+      .burger-preview { width: 135px; }
+      .bp-layer { width: 110px; height: 20px; font-size: 15px; }
+    }
+
+    @media (min-width: 601px) {
+      .customer-card { width: 220px; top: 58px; padding: 14px; }
+      .cust-face { font-size: 38px; }
+      .order-row { font-size: 13px; padding: 6px 10px; }
+      .burger-preview { width: 170px; }
+      .bp-layer { width: 135px; height: 26px; font-size: 18px; }
+      .ingredient-bar { padding: 8px 10px; gap: 6px; bottom: 18px; }
+      .ing-btn { min-width: 52px; padding: 10px 12px; }
+      .ing-btn .emoji { font-size: 24px; }
+      .bar-actions { flex-direction: row; gap: 5px; padding-left: 10px; margin-left: 5px; }
+      .action-btn { padding: 8px 18px; font-size: 12px; min-height: 38px; }
+      .hud-stat { padding: 5px 14px; font-size: 13px; }
+    }
+
+    @media (min-width: 901px) {
+      .customer-card { width: 240px; left: 30px; }
+      .burger-preview { width: 190px; }
+      .bp-layer { width: 150px; height: 28px; font-size: 20px; }
+      .ingredient-bar { padding: 10px 14px; gap: 8px; bottom: 24px; }
+      .ing-btn { min-width: 60px; padding: 12px 14px; }
+      .ing-btn .emoji { font-size: 26px; }
+      .ing-btn .name { font-size: 10px; }
+      .bar-actions { gap: 6px; }
+      .action-btn { padding: 10px 22px; font-size: 13px; min-height: 40px; }
+      .hud-stat { padding: 6px 16px; font-size: 14px; }
+      .final-stat { min-width: 110px; padding: 20px 24px; }
+      .final-stat .value { font-size: 34px; }
     }
   </style>
 </head>
 <body>
-
-  <!-- 3D Canvas -->
   <canvas id="gameCanvas"></canvas>
 
-  <!-- ==================== START SCREEN ==================== -->
+  <!-- Start Screen -->
   <div class="screen" id="startScreen">
-    <div class="logo">🍔</div>
-    <h1>Burger Rush</h1>
-    <p class="subtitle">在繁忙的汉堡店里，根据顾客的订单快速制作汉堡！<br>时间越短，奖励越多。</p>
-    <button class="btn-primary" id="btnStart">开始营业 🍳</button>
+    <div class="start-logo">🍔</div>
+    <h1 class="start-title">Burger Rush</h1>
+    <p class="start-sub">根据顾客订单<br>快速制作完美汉堡！</p>
+    <button class="btn-start" id="btnStart">开 始 营 业</button>
   </div>
 
-  <!-- ==================== GAME OVER SCREEN ==================== -->
+  <!-- Game Over Screen -->
   <div class="screen hidden" id="gameOverScreen">
     <h2>🌙 今日打烊</h2>
     <div class="final-stats">
@@ -572,12 +533,11 @@
         <div class="label">服务顾客</div>
       </div>
     </div>
-    <button class="btn-primary" id="btnRestart">明天再来 💪</button>
+    <button class="btn-start" id="btnRestart">明天再来 💪</button>
   </div>
 
-  <!-- ==================== GAME HUD ==================== -->
+  <!-- Game HUD -->
   <div class="ui-layer hidden" id="gameUI">
-    <!-- Top Bar -->
     <div class="hud-top">
       <div class="hud-brand">🍔 Burger Rush</div>
       <div class="hud-stats">
@@ -587,43 +547,35 @@
       </div>
     </div>
 
-    <!-- Customer Card -->
     <div class="customer-card ok" id="customerCard">
-      <div class="customer-face" id="custFace">😊</div>
-      <div class="customer-name" id="custName">顾客</div>
+      <div class="cust-header">
+        <div class="cust-face" id="custFace">😊</div>
+        <div class="cust-name" id="custName">顾客</div>
+      </div>
       <div class="timer-track">
         <div class="timer-fill" id="timerFill" style="width: 100%"></div>
       </div>
       <div class="order-list" id="orderList"></div>
     </div>
 
-    <!-- Burger Preview -->
     <div class="burger-preview" id="burgerPreview">
       <div class="bp-label">你的汉堡</div>
       <div class="bp-empty">点击下方食材开始制作</div>
     </div>
 
-    <!-- Ingredient Bar -->
     <div class="ingredient-bar" id="ingredientBar">
-      <!-- Buttons injected by JS -->
       <div class="bar-actions">
-        <button class="action-btn btn-undo" id="btnUndo">↩ 撤销</button>
-        <button class="action-btn btn-clear" id="btnClear">🗑 清空</button>
-        <button class="action-btn btn-serve" id="btnServe">🍽 上菜</button>
+        <button class="action-btn btn-undo" id="btnUndo">↩</button>
+        <button class="action-btn btn-clear" id="btnClear">✕</button>
+        <button class="action-btn btn-serve" id="btnServe">✓ 上菜</button>
       </div>
     </div>
 
-    <!-- Notifications -->
     <div class="notif-container" id="notifContainer"></div>
   </div>
 
-  <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
   <script>
-    // =============================================
-    // DATA
-    // =============================================
     const INGREDIENTS = [
       { name: '底层面包', emoji: '🟫', cls: 'l-bottom',  color: 0xb8863a },
       { name: '生菜',     emoji: '🥬', cls: 'l-lettuce', color: 0x4a9e3a },
@@ -656,9 +608,6 @@
       { name: '刘哥',   face: '😎' },
     ];
 
-    // =============================================
-    // STATE
-    // =============================================
     const S = {
       money: 0, score: 0, served: 0, total: 10,
       order: null, burger: [], timer: 0, maxTimer: 30,
@@ -666,14 +615,11 @@
       burgerGroup: null, animId: null, timerInterval: null,
     };
 
-    // =============================================
-    // THREE.JS
-    // =============================================
     function init3D() {
       const canvas = document.getElementById('gameCanvas');
       S.scene = new THREE.Scene();
-      S.scene.background = new THREE.Color(0x1c1108);
-      S.scene.fog = new THREE.FogExp2(0x1c1108, 0.04);
+      S.scene.background = new THREE.Color(0x0f0b06);
+      S.scene.fog = new THREE.FogExp2(0x0f0b06, 0.05);
 
       S.camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 100);
       S.camera.position.set(0, 4, 7);
@@ -685,31 +631,29 @@
       S.renderer.shadowMap.enabled = true;
       S.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-      const amb = new THREE.AmbientLight(0xffeedd, 0.5);
-      S.scene.add(amb);
+      S.scene.add(new THREE.AmbientLight(0xffeedd, 0.5));
       const dir = new THREE.DirectionalLight(0xfff0dd, 0.9);
-      dir.position.set(3, 8, 5);
-      dir.castShadow = true;
+      dir.position.set(3, 8, 5); dir.castShadow = true;
       dir.shadow.mapSize.set(1024, 1024);
       S.scene.add(dir);
       const pt = new THREE.PointLight(0xff6b2b, 0.4, 15);
       pt.position.set(-2, 3, 2);
       S.scene.add(pt);
 
-      const floorGeo = new THREE.PlaneGeometry(20, 20);
-      const floorMat = new THREE.MeshStandardMaterial({ color: 0x2a1a0e, roughness: 0.9 });
-      const floor = new THREE.Mesh(floorGeo, floorMat);
-      floor.rotation.x = -Math.PI / 2;
-      floor.position.y = -1.5;
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(20, 20),
+        new THREE.MeshStandardMaterial({ color: 0x1a1008, roughness: 0.9 })
+      );
+      floor.rotation.x = -Math.PI / 2; floor.position.y = -1.5;
       floor.receiveShadow = true;
       S.scene.add(floor);
 
-      const counterGeo = new THREE.BoxGeometry(5, 0.3, 2.5);
-      const counterMat = new THREE.MeshStandardMaterial({ color: 0x5a3520, roughness: 0.7 });
-      const counter = new THREE.Mesh(counterGeo, counterMat);
+      const counter = new THREE.Mesh(
+        new THREE.BoxGeometry(5, 0.3, 2.5),
+        new THREE.MeshStandardMaterial({ color: 0x3a2515, roughness: 0.7 })
+      );
       counter.position.set(0, -1.2, 0);
-      counter.castShadow = true;
-      counter.receiveShadow = true;
+      counter.castShadow = counter.receiveShadow = true;
       S.scene.add(counter);
 
       S.burgerGroup = new THREE.Group();
@@ -730,34 +674,24 @@
       S.burger.forEach((name) => {
         const ing = INGREDIENTS.find(x => x.name === name);
         if (!ing) return;
-        const geo = new THREE.CylinderGeometry(0.55, 0.55, layerH, 24);
-        const mat = new THREE.MeshStandardMaterial({
-          color: ing.color, roughness: 0.6, metalness: 0.05,
-        });
-        const mesh = new THREE.Mesh(geo, mat);
+        const mesh = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.55, 0.55, layerH, 24),
+          new THREE.MeshStandardMaterial({ color: ing.color, roughness: 0.6, metalness: 0.05 })
+        );
         mesh.position.y = y;
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
+        mesh.castShadow = mesh.receiveShadow = true;
         S.burgerGroup.add(mesh);
         y += layerH;
       });
     }
 
-    // =============================================
-    // UI HELPERS
-    // =============================================
     function $(id) { return document.getElementById(id); }
 
     function showScreen(id) {
       ['startScreen', 'gameOverScreen', 'gameUI'].forEach(s => {
         const el = $(s);
-        if (s === id) {
-          el.classList.remove('hidden');
-          el.style.pointerEvents = 'auto';
-        } else {
-          el.classList.add('hidden');
-          el.style.pointerEvents = 'none';
-        }
+        if (s === id) { el.classList.remove('hidden'); el.style.pointerEvents = 'auto'; }
+        else { el.classList.add('hidden'); el.style.pointerEvents = 'none'; }
       });
     }
 
@@ -794,11 +728,7 @@
         row.className = `order-row${done ? ' done' : ''}`;
         const placed = idx < S.burger.length ? S.burger[idx] : '';
         const placedMatch = done ? '✅' : (placed ? `🔸${placed}` : '⬜');
-        row.innerHTML = `
-          <span class="oi">${ing ? ing.emoji : '?'}</span>
-          <span>${ingName}</span>
-          <span class="check">${placedMatch}</span>
-        `;
+        row.innerHTML = `<span class="oi">${ing ? ing.emoji : '?'}</span><span>${ingName}</span><span class="check">${placedMatch}</span>`;
         list.appendChild(row);
       });
     }
@@ -808,15 +738,13 @@
       bp.querySelectorAll('.bp-layer').forEach(l => l.remove());
       const empty = bp.querySelector('.bp-empty');
       if (empty) empty.remove();
-
       if (S.burger.length === 0) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'bp-empty';
-        emptyDiv.textContent = '点击下方食材开始制作';
-        bp.appendChild(emptyDiv);
+        const div = document.createElement('div');
+        div.className = 'bp-empty';
+        div.textContent = '点击下方食材开始制作';
+        bp.appendChild(div);
         return;
       }
-
       S.burger.forEach(name => {
         const ing = INGREDIENTS.find(x => x.name === name);
         if (!ing) return;
@@ -840,20 +768,11 @@
       fill.style.width = pct + '%';
       card.classList.remove('ok', 'impatient', 'angry');
       fill.classList.remove('warn', 'danger');
-      if (pct > 60) {
-        card.classList.add('ok');
-      } else if (pct > 30) {
-        card.classList.add('impatient');
-        fill.classList.add('warn');
-      } else {
-        card.classList.add('angry');
-        fill.classList.add('danger');
-      }
+      if (pct > 60) card.classList.add('ok');
+      else if (pct > 30) { card.classList.add('impatient'); fill.classList.add('warn'); }
+      else { card.classList.add('angry'); fill.classList.add('danger'); }
     }
 
-    // =============================================
-    // GAME LOGIC
-    // =============================================
     function startGame() {
       S.money = 0; S.score = 0; S.served = 0;
       showScreen('gameUI');
@@ -870,16 +789,13 @@
       S.order = { ingredients: recipe, customer: cust };
       S.burger = [];
       S.timer = S.maxTimer;
-
       $('custFace').textContent = cust.face;
       $('custName').textContent = cust.name;
-
       updateOrderUI();
       updateBurgerPreview();
       updateHUD();
       updateCustomerCard();
       render3DBurger();
-
       if (S.timerInterval) clearInterval(S.timerInterval);
       S.timerInterval = setInterval(tick, 100);
     }
@@ -982,9 +898,6 @@
       startGame();
     }
 
-    // =============================================
-    // ANIMATION LOOP
-    // =============================================
     function animate() {
       if (!S.playing) return;
       S.animId = requestAnimationFrame(animate);
@@ -992,9 +905,6 @@
       S.renderer.render(S.scene, S.camera);
     }
 
-    // =============================================
-    // EVENTS
-    // =============================================
     $('btnStart').onclick = startGame;
     $('btnRestart').onclick = restartGame;
     $('btnUndo').onclick = undoLast;
@@ -1005,11 +915,8 @@
       if (!S.playing) return;
       if (e.key === 'z' || e.key === 'Z') { undoLast(); return; }
       if (e.key === 'Backspace' || e.key === 'Delete') { clearBurger(); return; }
-      const map = { '1':'add0','2':'add1','3':'add2','4':'add3','5':'add4','6':'add5','7':'add6','8':'add7' };
-      if (map[e.key]) {
-        const idx = parseInt(e.key) - 1;
-        if (INGREDIENTS[idx]) addIngredient(INGREDIENTS[idx].name);
-      }
+      const map = { '1':'a0','2':'a1','3':'a2','4':'a3','5':'a4','6':'a5','7':'a6','8':'a7' };
+      if (map[e.key]) { const idx = parseInt(e.key) - 1; if (INGREDIENTS[idx]) addIngredient(INGREDIENTS[idx].name); }
       if (e.key === 'c' || e.key === 'C') clearBurger();
       if (e.key === 's' || e.key === 'S') serveBurger();
     });
