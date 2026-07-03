@@ -396,6 +396,12 @@
       color: #fff;
     }
     .action-btn:active { transform: scale(0.95); }
+    .btn-undo {
+      background: var(--clr-surface-2);
+      color: var(--clr-text-dim);
+      border: 1px solid var(--clr-border);
+    }
+    .btn-undo:hover { border-color: var(--clr-warning); color: var(--clr-warning); }
     .btn-clear {
       background: var(--clr-surface-2);
       color: var(--clr-text-dim);
@@ -559,6 +565,7 @@
     <div class="ingredient-bar" id="ingredientBar">
       <!-- Buttons injected by JS -->
       <div class="bar-actions">
+        <button class="action-btn btn-undo" id="btnUndo">↩ 撤销</button>
         <button class="action-btn btn-clear" id="btnClear">🗑 清空</button>
         <button class="action-btn btn-serve" id="btnServe">🍽 上菜</button>
       </div>
@@ -746,15 +753,19 @@
       if (!S.order) return;
       const list = $('orderList');
       list.innerHTML = '';
-      S.order.ingredients.forEach(ingName => {
+      S.order.ingredients.forEach((ingName, idx) => {
         const ing = INGREDIENTS.find(x => x.name === ingName);
-        const done = S.burger.includes(ingName);
+        // Match by position: is this order item already placed at this position?
+        const done = idx < S.burger.length && S.burger[idx] === ingName;
         const row = document.createElement('div');
         row.className = `order-row${done ? ' done' : ''}`;
+        // Show what's been placed so far
+        const placed = idx < S.burger.length ? S.burger[idx] : '';
+        const placedMatch = done ? '✅' : (placed ? `🔸${placed}` : '⬜');
         row.innerHTML = `
           <span class="oi">${ing ? ing.emoji : '?'}</span>
           <span>${ingName}</span>
-          <span class="check">✓</span>
+          <span class="check">${placedMatch}</span>
         `;
         list.appendChild(row);
       });
@@ -876,8 +887,21 @@
       render3DBurger();
     }
 
+    function undoLast() {
+      if (!S.playing || S.burger.length === 0) return;
+      S.burger.pop();
+      updateOrderUI();
+      updateBurgerPreview();
+      render3DBurger();
+      notify('↩️ 撤销了最后一个', 'info');
+    }
+
     function serveBurger() {
       if (!S.playing || !S.order) return;
+      if (S.burger.length === 0) {
+        notify('🤔 汉堡是空的！先加点食材', 'info');
+        return;
+      }
       const need = S.order.ingredients;
       const have = S.burger;
       const correct = need.length === have.length && need.every((v, i) => v === have[i]);
@@ -891,12 +915,29 @@
         notify(`✅ ${S.order.customer.name} 很满意！+¥${earn}`, 'success');
         updateHUD();
         if (S.served >= S.total) { endGame(); return; }
-        setTimeout(nextOrder, 1400);
+        // Animate customer leaving
+        $('customerCard').style.transition = 'transform 0.5s, opacity 0.5s';
+        $('customerCard').style.transform = 'translateX(-120%)';
+        $('customerCard').style.opacity = '0';
+        setTimeout(() => {
+          nextOrder();
+          $('customerCard').style.transform = '';
+          $('customerCard').style.opacity = '';
+        }, 600);
       } else {
-        notify('❌ 订单不对！', 'error');
+        // Show what's wrong
+        if (have.length < need.length) {
+          notify(`❌ 还差 ${need.length - have.length} 个食材！`, 'error');
+        } else if (have.length > need.length) {
+          notify(`❌ 放多了！只要 ${need.length} 个`, 'error');
+        } else {
+          // Same length but wrong order
+          const wrongIdx = need.findIndex((v, i) => v !== have[i]);
+          notify(`❌ 第${wrongIdx + 1}层不对，应该是 ${need[wrongIdx]}`, 'error');
+        }
         S.score = Math.max(0, S.score - 30);
         updateHUD();
-        setTimeout(clearBurger, 800);
+        setTimeout(clearBurger, 1000);
       }
     }
 
@@ -931,11 +972,14 @@
     // =============================================
     $('btnStart').onclick = startGame;
     $('btnRestart').onclick = restartGame;
+    $('btnUndo').onclick = undoLast;
     $('btnClear').onclick = clearBurger;
     $('btnServe').onclick = serveBurger;
 
     document.addEventListener('keydown', e => {
       if (!S.playing) return;
+      if (e.key === 'z' || e.key === 'Z') { undoLast(); return; }
+      if (e.key === 'Backspace' || e.key === 'Delete') { clearBurger(); return; }
       const map = { '1':'add0','2':'add1','3':'add2','4':'add3','5':'add4','6':'add5','7':'add6','8':'add7' };
       if (map[e.key]) {
         const idx = parseInt(e.key) - 1;
